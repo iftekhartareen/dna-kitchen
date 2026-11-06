@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dna Kitchen & Events | Ajax, Ontario</title>
+<meta name="description" content="Dna Kitchen & Events, 190 Station St, Ajax, Ontario. Restaurant dining and full-service event catering for private parties, corporate events and weddings.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: #0d0b09;
+    --ink-2: #15120f;
+    --ink-3: #1d1915;
+    --gold: #c6a15b;
+    --gold-soft: #e0c48d;
+    --cream: #efe6d3;
+    --muted: #a39887;
+    --line: rgba(198, 161, 91, 0.32);
+    --line-faint: rgba(239, 230, 211, 0.1);
+    --serif: "Bodoni Moda", "Didot", "Bodoni 72", "Times New Roman", serif;
+    --sans: "Jost", "Futura", "Century Gothic", "Helvetica Neue", Arial, sans-serif;
+    --pad: clamp(1.25rem, 5vw, 4.5rem);
+    --max: 1240px;
+    --ease: cubic-bezier(.2, .7, .1, 1);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink: #0d0b09; } }
+  :root[data-theme="dark"] { --ink: #0d0b09; }
+
+  *, *::before, *::after { box-sizing: inherit; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 84px); overflow-x: clip; }
+  body {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+    z-index: 60; background: var(--ink);
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--gold); color: var(--ink); }
+  :focus-visible { outline: 1px solid var(--gold); outline-offset: 4px; }
+
+  .wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 var(--pad); }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    padding: 1rem 2rem; border: 1px solid var(--gold); color: var(--gold);
+    font-family: var(--sans); font-size: .82rem; font-weight: 500; letter-spacing: .14em;
+    overflow: hidden; isolation: isolate; cursor: pointer; background: transparent;
+    transition: color .5s var(--ease), transform .4s var(--ease), border-color .4s;
+  }
+  .btn::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; background: var(--gold);
+    transform: scaleX(0); transform-origin: right center;
+    transition: transform .6s var(--ease);
+  }
+  .btn:hover { color: var(--ink); transform: translateY(-2px); }
+  .btn:hover::before { transform: scaleX(1); transform-origin: left center; }
+  .btn--solid { background: var(--gold); color: var(--ink); }
+  .btn--solid::before { background: var(--cream); }
+  .btn--solid:hover { border-color: var(--cream); }
+  .btn--sm { padding: .7rem 1.25rem; font-size: .74rem; }
+
+  .sweep { position: relative; }
+  .sweep::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px; background: var(--gold);
+    transform: scaleX(0); transform-origin: right; transition: transform .5s var(--ease);
+  }
+  .sweep:hover::after, .sweep:focus-visible::after { transform: scaleX(1); transform-origin: left; }
+
+  /* ---------- Top bar ---------- */
+  .bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    padding-top: env(safe-area-inset-top, 0px);
+    transition: background .5s, border-color .5s, backdrop-filter .5s;
+    border-bottom: 1px solid transparent;
+  }
+  .bar.is-solid { background: rgba(13, 11, 9, .86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-color: var(--line-faint); }
+  .scroll-progress {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 2px;
+    background: var(--gold); pointer-events: none; transform: scaleX(0); transform-origin: left center;
+  }
+  .bar__in { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: 76px; }
+  .brand { font-family: var(--serif); font-size: 1.35rem; letter-spacing: -.01em; white-space: nowrap; }
+  .brand em { font-style: italic; color: var(--gold); }
+  .nav { display: flex; gap: 2.25rem; font-size: .9rem; letter-spacing: .04em; }
+  .nav a { color: var(--muted); transition: color .3s; }
+  .nav a:hover { color: var(--cream); }
+  .bar__right { display: flex; align-items: center; gap: 1rem; }
+  .menu-toggle {
+    display: none; width: 42px; height: 42px; border: 1px solid var(--line); background: transparent; cursor: pointer;
+    position: relative;
+  }
+  .menu-toggle span { position: absolute; left: 11px; right: 11px; height: 1px; background: var(--cream); transition: transform .4s var(--ease), top .4s var(--ease); }
+  .menu-toggle span:nth-child(1) { top: 17px; }
+  .menu-toggle span:nth-child(2) { top: 24px; }
+  .bar.is-open .menu-toggle span:nth-child(1) { top: 20px; transform: rotate(45deg); }
+  .bar.is-open .menu-toggle span:nth-child(2) { top: 20px; transform: rotate(-45deg); }
+
+  @media (max-width: 860px) {
+    .menu-toggle { display: block; }
+    .nav {
+      position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; gap: 0;
+      background: var(--ink); border-bottom: 1px solid var(--line-faint);
+      padding: .5rem var(--pad) 1.5rem; visibility: hidden; opacity: 0; transform: translateY(-8px);
+      transition: opacity .4s var(--ease), transform .4s var(--ease), visibility .4s;
+    }
+    .nav a { padding: 1rem 0; border-bottom: 1px solid var(--line-faint); font-family: var(--serif); font-size: 1.5rem; color: var(--cream); }
+    .bar.is-open { background: var(--ink); }
+    .bar.is-open .nav { visibility: visible; opacity: 1; transform: none; }
+  }
+  @media (max-width: 420px) { .brand { font-size: 1.1rem; } .bar .btn--sm { padding: .65rem .9rem; } }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; min-height: 100svh; display: flex; align-items: flex-end; overflow: hidden; padding: 140px 0 clamp(3rem, 8vh, 6rem); }
+  .hero__bg {
+    position: absolute; inset: -12% 0 -12% 0; z-index: 0; will-change: transform;
+    background:
+      linear-gradient(180deg, rgba(13, 11, 9, .3) 0%, rgba(13, 11, 9, .45) 52%, var(--ink) 100%),
+      url("assets/hero-steak.jpg") center 55% / cover no-repeat;
+  }
+  .hero__bg::after {
+    content: ""; position: absolute; inset: 0; opacity: .14; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .hero__ring {
+    position: absolute; right: -14vw; top: 8vh; width: min(70vw, 760px); aspect-ratio: 1; border-radius: 50%;
+    border: 1px solid var(--line); opacity: .55;
+  }
+  .hero__ring::after { content: ""; position: absolute; inset: 9%; border-radius: 50%; border: 1px solid rgba(198,161,91,.14); }
+  .hero .wrap { position: relative; z-index: 1; }
+  .hero__meta { display: flex; justify-content: space-between; align-items: center; gap: 1rem; color: var(--muted); font-size: .9rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line); margin-bottom: clamp(1.5rem, 4vh, 3rem); }
+  .hero__title {
+    font-family: var(--serif); font-weight: 400; line-height: .9; letter-spacing: -.045em;
+    font-size: clamp(3.4rem, 13.5vw, 12.5rem);
+  }
+  .hero__title .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }
+  .hero__title .w > span { display: inline-block; will-change: transform, opacity; }
+  .hero__title .amp { font-style: italic; color: var(--gold); }
+  .hero__foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 2rem; margin-top: clamp(2rem, 5vh, 3.5rem); }
+  .hero__line { font-size: clamp(1.05rem, 1.6vw, 1.3rem); color: var(--cream); max-width: 32ch; opacity: .88; }
+  .hero__cta { display: flex; gap: .9rem; flex-wrap: wrap; }
+  @media (max-width: 760px) { .hero__foot { grid-template-columns: 1fr; } .hero__meta span:last-child { display: none; } }
+
+  .anim .hero__title .w > span { opacity: 0; transform: translateY(45%); }
+  .anim .hero-fade { opacity: 0; transform: translateY(16px); }
+
+  /* ---------- Marquee ---------- */
+  .marquee { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; padding: 1.35rem 0; background: var(--ink-2); }
+  .marquee__track { display: flex; width: max-content; animation: marquee 48s linear infinite; }
+  .marquee__group { display: flex; flex-shrink: 0; align-items: center; }
+  .marquee__group span { font-family: var(--serif); font-style: italic; font-size: clamp(1.6rem, 3.6vw, 2.8rem); letter-spacing: -.02em; padding: 0 clamp(1.25rem, 3vw, 2.5rem); white-space: nowrap; color: var(--cream); }
+  .marquee__group i { width: 7px; height: 7px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ---------- Sections ---------- */
+  .section { padding: clamp(5rem, 12vw, 10rem) 0; position: relative; }
+  .section + .section { border-top: 1px solid var(--line-faint); }
+  .sec-head { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1.5rem; align-items: baseline; padding-bottom: 1.75rem; border-bottom: 1px solid var(--line); margin-bottom: clamp(2.5rem, 6vw, 5rem); }
+  .sec-num { font-family: var(--serif); font-style: italic; color: var(--gold); font-size: 1.15rem; }
+  .sec-title { font-family: var(--serif); font-weight: 400; font-size: clamp(2.6rem, 6.5vw, 5.5rem); line-height: .95; letter-spacing: -.035em; }
+  @media (max-width: 640px) { .sec-head { grid-template-columns: 1fr; gap: .5rem; } }
+
+  .anim [data-reveal] { opacity: 0; transform: translateY(32px); }
+
+  /* About */
+  .about { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(2.5rem, 7vw, 7rem); align-items: start; }
+  .pull { font-family: var(--serif); font-weight: 400; font-size: clamp(1.9rem, 4.2vw, 3.6rem); line-height: 1.12; letter-spacing: -.025em; }
+  .pull::before { content: "“"; display: block; color: var(--gold); font-size: 1.6em; line-height: .6; margin-bottom: .2em; }
+  .about__body p { color: var(--muted); max-width: 46ch; }
+  .about__body p + p { margin-top: 1.25rem; }
+  .about__photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-top: 1.5rem; filter: saturate(.85) brightness(.9); }
+  .about__sig { margin-top: 2.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line); font-family: var(--serif); font-style: italic; color: var(--gold-soft); font-size: 1.15rem; }
+  @media (max-width: 860px) { .about { grid-template-columns: 1fr; } }
+
+  /* Menu */
+  .menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(3rem, 6vw, 6rem) clamp(2.5rem, 7vw, 7rem); }
+  .menu__group--wide { grid-column: 1 / -1; }
+  .menu__label { font-family: var(--serif); font-style: italic; font-size: 1.6rem; color: var(--gold); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+  .menu__label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .menu__list { list-style: none; }
+  .menu__group--wide .menu__list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); column-gap: clamp(2.5rem, 7vw, 7rem); }
+  .dish { padding: 1.15rem 0; border-bottom: 1px solid var(--line-faint); cursor: default; }
+  .dish__row { display: flex; align-items: baseline; gap: .75rem; }
+  .dish__name { font-family: var(--serif); font-size: clamp(1.2rem, 2vw, 1.45rem); letter-spacing: -.01em; transition: color .4s, transform .5s var(--ease); display: inline-block; }
+  .dish__dots { flex: 1; min-width: 1.5rem; border-bottom: 1px dotted rgba(198,161,91,.45); transform: translateY(-.3em); }
+  .dish__price { font-family: var(--serif); color: var(--gold); font-size: 1.15rem; white-space: nowrap; }
+  .dish__desc { color: var(--muted); font-size: .95rem; margin-top: .3rem; max-width: 44ch; transition: color .4s; }
+  .dish:hover .dish__name { color: var(--gold-soft); transform: translateX(6px); }
+  .dish:hover .dish__desc { color: var(--cream); }
+  .menu__note { margin-top: 3rem; color: var(--muted); font-size: .92rem; }
+  .anim .dish { opacity: 0; transform: translateY(22px); }
+  @media (max-width: 860px) { .menu { grid-template-columns: 1fr; } }
+
+  /* Events */
+  .events__intro { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2rem; align-items: end; margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
+  .events__intro p { color: var(--muted); max-width: 52ch; font-size: 1.1rem; }
+  .events__banner { position: relative; height: clamp(14rem, 30vw, 26rem); overflow: hidden; margin-bottom: clamp(2.5rem, 6vw, 4.5rem); }
+  .events__banner img { width: 100%; height: 100%; object-fit: cover; object-position: center 55%; filter: saturate(.85) brightness(.78); }
+  .events__banner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(13,11,9,.35), transparent 70%), linear-gradient(0deg, rgba(13,11,9,.28), transparent 60%); pointer-events: none; }
+  .event { display: grid; grid-template-columns: 7rem minmax(0, 5fr) minmax(0, 6fr); gap: 1.5rem; padding: clamp(1.75rem, 4vw, 2.75rem) 0; border-top: 1px solid var(--line); position: relative; transition: padding .5s var(--ease); }
+  .event:last-child { border-bottom: 1px solid var(--line); }
+  .event::before { content: ""; position: absolute; left: 0; top: -1px; height: 1px; width: 100%; background: var(--gold-soft); transform: scaleX(0); transform-origin: left; transition: transform .8s var(--ease); }
+  .event:hover::before { transform: scaleX(1); }
+  .event__num { font-family: var(--serif); font-style: italic; color: var(--gold); font-size: 1.1rem; padding-top: .55rem; }
+  .event__title { font-family: var(--serif); font-weight: 400; font-size: clamp(1.9rem, 3.6vw, 3rem); letter-spacing: -.03em; line-height: 1; transition: transform .6s var(--ease), color .4s; }
+  .event:hover .event__title { transform: translateX(10px); color: var(--gold-soft); }
+  .event__text { color: var(--muted); max-width: 48ch; }
+  .event__text small { display: block; margin-top: .9rem; color: var(--cream); font-size: .88rem; letter-spacing: .02em; }
+  @media (max-width: 860px) {
+    .events__intro { grid-template-columns: 1fr; }
+    .event { grid-template-columns: 3rem minmax(0, 1fr); }
+    .event__text { grid-column: 2; }
+  }
+
+  /* Gallery */
+  .gallery { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-rows: clamp(140px, 18vw, 230px); gap: clamp(.5rem, 1.2vw, 1rem); }
+  .shot { position: relative; overflow: hidden; background: var(--ink-3); }
+  .shot:nth-child(1) { grid-column: span 7; grid-row: span 2; }
+  .shot:nth-child(2) { grid-column: span 5; }
+  .shot:nth-child(3) { grid-column: span 5; }
+  .shot:nth-child(4), .shot:nth-child(5) { grid-column: span 6; }
+  .shot__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease), filter 1.2s var(--ease); filter: saturate(.85) brightness(.85); }
+  .shot:hover .shot__img { transform: scale(1.07); filter: saturate(1.05) brightness(1); }
+  .shot__cap { position: absolute; left: 1rem; bottom: .9rem; right: 1rem; font-family: var(--serif); font-style: italic; font-size: 1rem; color: var(--cream); z-index: 1; transform: translateY(6px); opacity: .8; transition: transform .6s var(--ease), opacity .6s; }
+  .shot:hover .shot__cap { transform: none; opacity: 1; }
+  .shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(13,11,9,.75)); pointer-events: none; }
+  @media (max-width: 760px) {
+    .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 42vw; }
+    .shot:nth-child(n) { grid-column: span 1; grid-row: span 1; }
+    .shot:nth-child(1) { grid-column: span 2; }
+  }
+
+  /* Info */
+  .info { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+  .info__col { padding: 2.25rem clamp(0rem, 2vw, 2rem) 2.25rem 0; }
+  .info__col + .info__col { border-left: 1px solid var(--line-faint); padding-left: clamp(1.25rem, 3vw, 2.5rem); }
+  .info__k { font-family: var(--serif); font-style: italic; color: var(--gold); font-size: 1.1rem; margin-bottom: 1rem; }
+  .info__v { font-size: 1.05rem; }
+  .info__v a { display: inline-block; }
+  .hours { list-style: none; }
+  .hours li { display: flex; justify-content: space-between; gap: 1rem; padding: .3rem 0; border-bottom: 1px dotted rgba(239,230,211,.12); }
+  .hours li span:last-child { color: var(--muted); }
+  .touch { margin-top: clamp(4rem, 9vw, 7rem); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 2rem; }
+  .touch h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(2.4rem, 6vw, 5rem); letter-spacing: -.035em; line-height: .98; max-width: 14ch; }
+  .touch__cta { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .touch__phone { font-family: var(--serif); font-size: clamp(1.5rem, 3vw, 2.1rem); color: var(--gold); letter-spacing: -.01em; }
+  @media (max-width: 860px) {
+    .info { grid-template-columns: 1fr; }
+    .info__col + .info__col { border-left: 0; border-top: 1px solid var(--line-faint); padding-left: 0; }
+  }
+
+  /* Footer */
+  .foot { border-top: 1px solid var(--line); padding: clamp(3rem, 7vw, 5rem) 0 2rem; background: var(--ink-2); }
+  .foot__name { font-family: var(--serif); font-size: clamp(2.6rem, 9vw, 7.5rem); letter-spacing: -.045em; line-height: .9; }
+  .foot__name em { color: var(--gold); }
+  .foot__row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1.25rem 2.5rem; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line-faint); color: var(--muted); font-size: .92rem; }
+  .foot__row a:hover { color: var(--cream); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+    .marquee__track { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar" id="bar">
+  <div class="scroll-progress" id="scrollProgress" role="progressbar" aria-label="Page scroll progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+  <div class="wrap bar__in">
+    <a href="#top" class="brand" aria-label="Dna Kitchen and Events, back to top">Dna <em>Kitchen</em></a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="#about" class="sweep">About</a>
+      <a href="#menu" class="sweep">Menu</a>
+      <a href="#events" class="sweep">Events</a>
+      <a href="#gallery" class="sweep">Gallery</a>
+      <a href="#visit" class="sweep">Visit</a>
+    </nav>
+    <div class="bar__right">
+      <a href="tel:+16477045490" class="btn btn--solid btn--sm">Call Now</a>
+      <button class="menu-toggle" id="toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <!-- Hero -->
+  <section class="hero" aria-label="Welcome">
+    <div class="hero__bg" id="heroBg"><div class="hero__ring"></div></div>
+    <div class="wrap">
+      <div class="hero__meta hero-fade">
+        <span>190 Station St, Ajax, Ontario</span>
+        <span>Kitchen & event catering</span>
+      </div>
+      <h1 class="hero__title" aria-label="Dna Kitchen & Events">
+        <span class="w"><span>Dna</span></span>
+        <span class="w"><span>Kitchen</span></span><br>
+        <span class="w"><span class="amp">&amp;</span></span>
+        <span class="w"><span>Events</span></span>
+      </h1>
+      <div class="hero__foot">
+        <p class="hero__line hero-fade">A neighbourhood kitchen in Ajax, cooking for your table tonight and catering the days you’ll remember.</p>
+        <div class="hero__cta hero-fade">
+          <a href="#menu" class="btn btn--solid">View Menu</a>
+          <a href="#events" class="btn">Book an Event</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Marquee -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track">
+      <div class="marquee__group">
+        <span>Fresh</span><i></i><span>Catering</span><i></i><span>Events</span><i></i><span>Ajax</span><i></i><span>Made from scratch</span><i></i><span>Private dining</span><i></i>
+      </div>
+      <div class="marquee__group">
+        <span>Fresh</span><i></i><span>Catering</span><i></i><span>Events</span><i></i><span>Ajax</span><i></i><span>Made from scratch</span><i></i><span>Private dining</span><i></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- 01 About -->
+  <section class="section" id="about">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <span class="sec-num">01</span>
+        <h2 class="sec-title">Our story</h2>
+      </div>
+      <div class="about">
+        <p class="pull" data-reveal>We cook the way family cooks for a celebration: generously, carefully, and with something always left for seconds.</p>
+        <div class="about__body" data-reveal>
+          <p>Dna Kitchen & Events started with a simple idea on Station Street: the food people line up for at a good party shouldn’t only come out once a year. So we opened a kitchen where it’s on the table every day.</p>
+          <p>Everything starts from scratch each morning, from slow braises and house marinades to sauces reduced by hand. The same team that runs our dining room plans and cooks for your events, so what you taste here is exactly what your guests get.</p>
+          <img class="about__photo" src="assets/interior.jpg" alt="Interior of Dna Kitchen & Events" loading="lazy">
+          <p class="about__sig">The Dna kitchen team</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 Menu -->
+  <section class="section" id="menu">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <span class="sec-num">02</span>
+        <h2 class="sec-title">The menu</h2>
+      </div>
+      <div class="menu">
+        <div class="menu__group">
+          <h3 class="menu__label">Starters</h3>
+          <ul class="menu__list">
+            <li class="dish"><div class="dish__row"><span class="dish__name">Grilled halloumi</span><span class="dish__dots"></span><span class="dish__price">$14</span></div><p class="dish__desc">Hot honey, cracked pepper, fresh thyme</p></li>
+            <li class="dish"><div class="dish__row"><span class="dish__name">Crispy calamari</span><span class="dish__dots"></span><span class="dish__price">$16</span></div><p class="dish__desc">Charred lemon aioli, pickled chili</p></li>
+            <li class="dish"><div class="dish__row"><span class="dish__name">Roasted tomato soup</span><span class="dish__dots"></span><span class="dish__price">$11</span></div><p class="dish__desc">Basil oil, toasted sourdough</p></li>
+          </ul>
+        </div>
+        <div class="menu__group">
+          <h3 class="menu__label">Mains</h3>
+          <ul class="menu__list">
+            <li class="dish"><div class="dish__row"><span class="dish__name">Braised short rib</span><span class="dish__dots"></span><span class="dish__price">$34</span></div><p class="dish__desc">Garlic mash, red wine jus, crispy shallots</p></li>
+            <li class="dish"><div class="dish__row"><span class="dish__name">Pan-seared salmon</span><span class="dish__dots"></span><span class="dish__price">$29</span></div><p class="dish__desc">Herbed rice, citrus butter, greens</p></li>
+            <li class="dish"><div class="dish__row"><span class="dish__name">Jerk chicken</span><span class="dish__dots"></span><span class="dish__price">$24</span></div><p class="dish__desc">Rice and peas, slaw, plantain</p></li>
+            <li class="dish"><div class="dish__row"><span class="dish__name">Wild mushroom risotto</span><span class="dish__dots"></span><span class="dish__price">$26</span></div><p class="dish__desc">Aged parmesan, truffle oil</p></li>
+          </ul>
+        </div>
+        <div class="menu__group menu__group--wide">
+          <h3 class="menu__label">Events catering</h3>
+          <ul class="menu__list">
+            <li class="dish"><div class="dish__row"><span class="dish__name">Canapé platter</span><span class="dish__dots"></span><span class="dish__price">$160</span></div><p class="dish__desc">40 pieces, chef’s seasonal selection</p></li>
+            <li class="dish"><div class="dish__row"><span class="dish__name">Family-style mains</span><span class="dish__dots"></span><span class="dish__price">$220</span></div><p class="dish__desc">Two mains and two sides, serves 10</p></li>
+            <li class="dish"><div class="dish__row"><span class="dish__name">Dessert table</span><span class="dish__dots"></span><span class="dish__price">$275</span></div><p class="dish__desc">Cakes, tarts and sweets, serves 25</p></li>
+          </ul>
+        </div>
+      </div>
+      <p class="menu__note" data-reveal>Menu changes with the season. Tell us about allergies and we’ll cook around them.</p>
+    </div>
+  </section>
+
+  <!-- 03 Events -->
+  <section class="section" id="events">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <span class="sec-num">03</span>
+        <h2 class="sec-title">Events & catering</h2>
+      </div>
+      <div class="events__intro" data-reveal>
+        <p>From twenty guests to two hundred, we plan the menu with you, cook it fresh on the day, and handle setup and service so you can stay with your people.</p>
+        <a href="tel:+16477045490" class="btn">Book an Event</a>
+      </div>
+      <figure class="events__banner" data-reveal>
+        <img src="assets/interior.jpg" alt="Dna Kitchen dining room set for guests" loading="lazy">
+      </figure>
+      <div class="events">
+        <article class="event" data-reveal>
+          <span class="event__num">i.</span>
+          <h3 class="event__title">Private parties</h3>
+          <p class="event__text">Birthdays, anniversaries, showers and milestone dinners. Choose a plated menu or a generous family-style spread, served at your home or ours.<small>From 20 guests</small></p>
+        </article>
+        <article class="event" data-reveal>
+          <span class="event__num">ii.</span>
+          <h3 class="event__title">Corporate</h3>
+          <p class="event__text">Team lunches, client meetings and year-end celebrations, delivered on time and set up ready to serve, with clear per-head pricing.<small>Lunch drop-offs to full service</small></p>
+        </article>
+        <article class="event" data-reveal>
+          <span class="event__num">iii.</span>
+          <h3 class="event__title">Weddings</h3>
+          <p class="event__text">Cocktail hour through late-night bites. We’ll sit down with you for a tasting, build a menu around your story, and run the kitchen on the day.<small>Tastings by appointment</small></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 Gallery -->
+  <section class="section" id="gallery">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <span class="sec-num">04</span>
+        <h2 class="sec-title">From the kitchen</h2>
+      </div>
+      <div class="gallery">
+        <figure class="shot" data-reveal><img class="shot__img" src="assets/dish-salmon.jpg" alt="Pan-seared salmon" loading="lazy"><figcaption class="shot__cap">Pan-seared salmon</figcaption></figure>
+        <figure class="shot" data-reveal><img class="shot__img" src="assets/dish-penne-cream.jpg" alt="Creamy penne pasta" loading="lazy"><figcaption class="shot__cap">Creamy penne</figcaption></figure>
+        <figure class="shot" data-reveal><img class="shot__img" src="assets/dish-penne-tomato.jpg" alt="Penne pasta with tomato sauce" loading="lazy"><figcaption class="shot__cap">Tomato penne</figcaption></figure>
+        <figure class="shot" data-reveal><img class="shot__img" src="assets/dish-pasta-duo.jpg" alt="Two pasta dishes" loading="lazy"><figcaption class="shot__cap">Pasta duo</figcaption></figure>
+        <figure class="shot" data-reveal><img class="shot__img" src="assets/dish-penne-dark.jpg" alt="Penne pasta in a dark sauce" loading="lazy"><figcaption class="shot__cap">Penne with a rich sauce</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 Visit -->
+  <section class="section" id="visit">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <span class="sec-num">05</span>
+        <h2 class="sec-title">Visit us</h2>
+      </div>
+      <div class="info" data-reveal>
+        <div class="info__col">
+          <p class="info__k">Address</p>
+          <p class="info__v"><a href="https://maps.google.com/?q=190+Station+St,+Ajax,+ON" target="_blank" rel="noopener" class="sweep">190 Station St<br>Ajax, Ontario</a></p>
+        </div>
+        <div class="info__col">
+          <p class="info__k">Phone</p>
+          <p class="info__v"><a href="tel:+16477045490" class="sweep">647-704-5490</a></p>
+        </div>
+        <div class="info__col">
+          <p class="info__k">Hours</p>
+          <ul class="hours info__v">
+            <li><span>Monday</span><span>Closed</span></li>
+            <li><span>Tue – Thu</span><span>11:30 am – 9 pm</span></li>
+            <li><span>Fri – Sat</span><span>11:30 am – 10 pm</span></li>
+            <li><span>Sunday</span><span>12 pm – 8 pm</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="touch" data-reveal>
+        <h3>Get in touch. We’d love to cook for you.</h3>
+        <div class="touch__cta">
+          <a href="tel:+16477045490" class="touch__phone sweep">647-704-5490</a>
+          <a href="tel:+16477045490" class="btn btn--solid">Call Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="foot__name">Dna Kitchen <em>&amp;</em> Events</p>
+    <div class="foot__row">
+      <a href="tel:+16477045490">647-704-5490</a>
+      <span>190 Station St, Ajax, Ontario</span>
+      <span>© <span id="yr">2026</span> Dna Kitchen & Events. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Navigation: solid bar on scroll + mobile toggle (works without GSAP)
+  (function () {
+    var bar = document.getElementById('bar'), toggle = document.getElementById('toggle');
+    var progress = document.getElementById('scrollProgress');
+    var onScroll = function () {
+      bar.classList.toggle('is-solid', window.scrollY > 40);
+      var scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+      var value = scrollableHeight > 0 ? Math.min(100, Math.max(0, window.scrollY / scrollableHeight * 100)) : 0;
+      progress.style.transform = 'scaleX(' + value / 100 + ')';
+      progress.setAttribute('aria-valuenow', String(Math.round(value)));
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    toggle.addEventListener('click', function () {
+      var open = bar.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', open);
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    });
+    document.querySelectorAll('.nav a').forEach(function (a) {
+      a.addEventListener('click', function () { bar.classList.remove('is-open'); toggle.setAttribute('aria-expanded', 'false'); });
+    });
+    document.getElementById('yr').textContent = new Date().getFullYear();
+  })();
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    var root = document.documentElement;
+    if ((window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || !window.gsap || !window.ScrollTrigger) return;
+    gsap.registerPlugin(ScrollTrigger);
+    root.classList.add('anim');
+
+    // Hero: word-by-word rise
+    var tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.to('.hero__title .w > span', { opacity: 1, y: 0, duration: 1.6, stagger: 0.2, delay: 0.2 })
+      .to('.hero-fade', { opacity: 1, y: 0, duration: 1.2, stagger: 0.12 }, '-=1.0');
+
+    // Hero parallax
+    gsap.to('#heroBg', { yPercent: 14, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+
+    // Section reveals
+    gsap.utils.toArray('[data-reveal]').forEach(function (el) {
+      gsap.to(el, { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
+    });
+
+    // Menu items stagger in
+    gsap.utils.toArray('.menu__group').forEach(function (group) {
+      gsap.to(group.querySelectorAll('.dish'), {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power2.out', stagger: 0.12,
+        scrollTrigger: { trigger: group, start: 'top 85%', once: true }
+      });
+    });
+
+    window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+  });
+</script>
+</body>
+</html>
